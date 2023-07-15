@@ -4,6 +4,7 @@
 float nn_interpolate(image im, float x, float y, int c)
 {
     // TODO Fill in
+    //hii
     return 0;
 }
 
