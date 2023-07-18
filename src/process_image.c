@@ -106,13 +106,112 @@ float three_way_min(float a, float b, float c)
     return (a < b) ? ( (a < c) ? a : c) : ( (b < c) ? b : c) ;
 }
 
-void rgb_to_hsv(image im)
-{
-    // TODO Fill this in
-
-}
-
 void hsv_to_rgb(image im)
 {
     // TODO Fill this in
+    int num_pixels = im.w * im.h;
+
+    for (int pixel_index = 0; pixel_index < num_pixels; pixel_index++) {
+        float red = 0, green = 0, blue = 0;
+
+        float hue = im.data[pixel_index];
+        float saturation = im.data[pixel_index + num_pixels];
+        float value = im.data[pixel_index + 2 * num_pixels];
+
+        float chroma = value * saturation;
+        if (saturation != 0) {
+            hue *= 6.0;
+            float hue_segment = hue - (int)hue;
+            float m = value - chroma;
+            float m1 = value - hue_segment * chroma;
+            float m2 = value - (1 - hue_segment) * chroma;
+
+            int hue_segment_int = (int)hue;
+            switch (hue_segment_int) {
+                case 0:
+                    red = value;
+                    green = m2;
+                    blue = m;
+                    break;
+                case 1:
+                    red = m1;
+                    green = value;
+                    blue = m;
+                    break;
+                case 2:
+                    red = m;
+                    green = value;
+                    blue = m2;
+                    break;
+                case 3:
+                    red = m;
+                    green = m1;
+                    blue = value;
+                    break;
+                case 4:
+                    red = m2;
+                    green = m;
+                    blue = value;
+                    break;
+                case 5:
+                    red = value;
+                    green = m;
+                    blue = m1;
+                    break;
+            }
+        } else {
+            red = value;
+            green = value;
+            blue = value;
+        }
+
+        im.data[pixel_index] = red;
+        im.data[pixel_index + num_pixels] = green;
+        im.data[pixel_index + 2 * num_pixels] = blue;
+    }
+
 }
+
+void rgb_to_hsv(image im)
+{
+    for (int pixel_index = 0; pixel_index < im.w * im.h; pixel_index++) {
+      
+        float red = im.data[pixel_index];
+        float green = im.data[pixel_index + im.w * im.h];
+        float blue = im.data[pixel_index + 2 * im.w * im.h];
+
+      
+        float value = three_way_max(red, green, blue);
+
+       
+        float minimum = three_way_min(red, green, blue);
+
+     
+        float chroma = value - minimum;
+
+   
+        float saturation = (value == 0 ? 0 : chroma / value);
+
+      
+        float hue = 0;
+        if (value != minimum) {
+            if (value == red) {
+                hue = (green - blue) / chroma;
+            } else if (value == green) {
+                hue = (blue - red) / chroma + 2;
+            } else if (value == blue) {
+                hue = (red - green) / chroma + 4;
+            }
+            hue /= 6.0;
+            if (hue < 0) {
+                hue += 1;
+            }
+        }
+
+      
+        im.data[pixel_index] = hue;
+        im.data[pixel_index + im.w * im.h] = saturation;
+        im.data[pixel_index + 2 * im.w * im.h] = value;
+    }
+}
+
